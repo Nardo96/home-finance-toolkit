@@ -131,3 +131,10 @@ FROM TransactionTypes
 """)
 print(results.fetchall())
 
+results = cur.execute("""
+SELECT SUM(Value)
+FROM Transactions
+WHERE AccountID IN (2, 3, 4)
+AND TransactionTypeID IN (1,2)
+""")
+print(results.fetchone())
