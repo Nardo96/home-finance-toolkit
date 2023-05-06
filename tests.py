@@ -54,10 +54,25 @@ AND TransactionTypeID IN (1,2)
 for row in results:
     print(row)
 
-print('\n\n\n---------TEST: Add transaction with addTransaction()-------\n')
-addTransaction(1, 1, '2023-05-05', 0.01)
+# Commented out addTransaction to stop adding transactions every test
+
+# print('\n\n\n---------TEST: Add transaction with addTransaction()-------\n')
+# addTransaction(1, 1, '2023-05-05', 0.01)
+# results = cur.execute("""
+# SELECT * FROM Transactions ORDER BY TransactionID DESC LIMIT 1
+# """)
+# for row in results:
+#     print(row)
+
+
+print('\n\n\n---------TEST: Delete transaction with deleteTransaction()-------\n')
+#Get index of last row
+results = cur.execute('SELECT COUNT(*) FROM Transactions')
+for row in results:
+    rowcount = int(row[0])
+deleteTransaction(rowcount)
 results = cur.execute("""
-SELECT * FROM Transactions ORDER BY TransactionID DESC LIMIT 1
+SELECT * FROM Transactions ORDER BY TransactionID DESC LIMIT 5
 """)
 for row in results:
     print(row)

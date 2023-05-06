@@ -13,6 +13,9 @@ def addTransaction(AccountID, TransactionTypeID, Date, Value):
     """, row)
     con.commit()
 
+def deleteTransaction(TransactionID):
+    cur.execute(f'UPDATE Transactions SET isDeleted = 1 WHERE TransactionID = CAST({TransactionID} AS INTEGER)')
+    con.commit()
 
 
 if __name__ == '__main__':
@@ -115,9 +118,11 @@ if __name__ == '__main__':
     (3, 'Slavic 401k', 1, 0, 1),
     (4, 'WeBull',1, 0, 0)
     """)
+    con.commit()
 
     cur.execute("""
     INSERT OR IGNORE INTO Users VALUES
     (1, 'Bernardo')
     """)
+    con.commit()
 
