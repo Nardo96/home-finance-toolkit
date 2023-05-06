@@ -76,3 +76,17 @@ SELECT * FROM Transactions ORDER BY TransactionID DESC LIMIT 5
 """)
 for row in results:
     print(row)
+
+
+print('\n\n\n---------TEST: Update transaction with updateTransaction()-------\n')
+#Get index of last row
+results = cur.execute('SELECT COUNT(*) FROM Transactions')
+for row in results:
+    rowcount = int(row[0])
+updateTransaction(rowcount, Value=30.00)
+results = cur.execute("""
+SELECT * FROM Transactions ORDER BY TransactionID DESC LIMIT 5
+""")
+for row in results:
+    print(row)
+

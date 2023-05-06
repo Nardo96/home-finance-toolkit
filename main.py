@@ -14,8 +14,30 @@ def addTransaction(AccountID, TransactionTypeID, Date, Value):
     con.commit()
 
 def deleteTransaction(TransactionID):
-    cur.execute(f'UPDATE Transactions SET isDeleted = 1 WHERE TransactionID = CAST({TransactionID} AS INTEGER)')
+    cur.execute(f'UPDATE Transactions SET IsDeleted = 1 \
+    WHERE TransactionID = CAST({TransactionID} AS INTEGER)')
     con.commit()
+
+def updateTransaction(TransactionID, AccountID=None,
+                      TransactionTypeID=None, Date=None, Value=None, IsDeleted=None):
+    if AccountID != None:
+        cur.execute(f'UPDATE Transactions SET AccountID = {AccountID} \
+        WHERE TransactionID = CAST({TransactionID} AS INTEGER)')
+    if TransactionTypeID != None:
+        cur.execute(f'UPDATE Transactions SET TransactionTypeID = {TransactionTypeID} \
+        WHERE TransactionID = CAST({TransactionID} AS INTEGER)')
+    if Date != None:
+        cur.execute(f'Update Transactions SET Date = {Date} \
+        WHERE TransactionID = CAST({TransactionID} AS INTEGER)')
+    if Value != None:
+        cur.execute(f'UPDATE Transactions SET Value = {Value} \
+        WHERE TransactionID = CAST({TransactionID} AS INTEGER)')
+    if IsDeleted != None:
+        cur.execute(f'UPDATE Transactions SET IsDeleted = {IsDeleted} \
+        WHERE TransactionID = CAST({TransactionID} AS INTEGER)')
+
+    con.commit()
+
 
 
 if __name__ == '__main__':
@@ -31,7 +53,7 @@ if __name__ == '__main__':
     TransactionTypeID Integer,    
     Date TEXT,
     Value REAL,
-    isDeleted Integer)
+    IsDeleted Integer)
     """)
 
     cur.execute("""
