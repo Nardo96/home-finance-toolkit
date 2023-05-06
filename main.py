@@ -101,40 +101,47 @@ if __name__ == '__main__':
     """)
 
 
-results = cur.execute("""
-SELECT *
-FROM Transactions
-""")
-print(results.fetchall())
+    #Query values as test
+    results = cur.execute("""
+    SELECT *
+    FROM Transactions
+    """)
+    for row in results:
+        print(row)
 
-results = cur.execute("""
-SELECT * 
-FROM Accounts
-""")
-print(results.fetchall())
+    results = cur.execute("""
+    SELECT * 
+    FROM Accounts
+    """)
+    for row in results:
+        print(row)
 
-results = cur.execute("""
-SELECT * 
-FROM Users
-""")
-print(results.fetchall())
+    results = cur.execute("""
+    SELECT * 
+    FROM Users
+    """)
+    for row in results:
+        print(row)
 
-results = cur.execute("""
-SELECT * 
-FROM ConfigurationTypes
-""")
-print(results.fetchall())
+    results = cur.execute("""
+    SELECT * 
+    FROM ConfigurationTypes
+    """)
+    for row in results:
+        print(row)
 
-results = cur.execute("""
-SELECT * 
-FROM TransactionTypes
-""")
-print(results.fetchall())
+    results = cur.execute("""
+    SELECT * 
+    FROM TransactionTypes
+    """)
+    for row in results:
+        print(row)
 
-results = cur.execute("""
-SELECT SUM(Value)
-FROM Transactions
-WHERE AccountID IN (2, 3, 4)
-AND TransactionTypeID IN (1,2)
-""")
-print(results.fetchone())
+    results = cur.execute("""
+    SELECT SUM(Value)
+    FROM Transactions
+    WHERE AccountID IN (2, 3, 4)
+    AND TransactionTypeID IN (1,2)
+    """)
+    for row in results:
+        print(row)
