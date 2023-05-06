@@ -1,14 +1,24 @@
 import sqlite3 as sql
 import csv
 
+# Connect to database
+con = sql.connect('hft.db')
+cur = con.cursor()
+
+def addTransaction(AccountID, TransactionTypeID, Date, Value):
+    row = [AccountID, TransactionTypeID, Date, Value]
+    cur.execute("""
+    INSERT INTO Transactions(AccountID, TransactionTypeID, Date, Value)
+    VALUES (?,?,?,?)
+    """, row)
+    con.commit()
+
+
+
 if __name__ == '__main__':
     # TODO: import from csv method
     #    DATAFILENAME = 'Budget.xlsx'
     #    FILEPATH = './'
-
-    # Connect to database
-    con = sql.connect('hft.db')
-    cur = con.cursor()
 
     # Create tables if they don't exist
     cur.execute("""
@@ -17,7 +27,8 @@ if __name__ == '__main__':
     AccountID INTEGER,
     TransactionTypeID Integer,    
     Date TEXT,
-    Value REAL)
+    Value REAL,
+    isDeleted Integer)
     """)
 
     cur.execute("""
@@ -92,7 +103,9 @@ if __name__ == '__main__':
             data[i][1] = int(data[i][1])
             data[i][2] = int(data[i][2])
             data[i][4] = float(data[i][4])
-        cur.executemany("INSERT OR IGNORE INTO Transactions VALUES(?, ?, ?, ?, ?)", data)
+        cur.executemany("""
+        INSERT OR IGNORE INTO Transactions(TransactionID, AccountID, TransactionTypeID, Date, Value) 
+        VALUES(?, ?, ?, ?, ?)""", data)
         con.commit()
 
     cur.execute("""
@@ -108,11 +121,3 @@ if __name__ == '__main__':
     (1, 'Bernardo')
     """)
 
-    # Query values as test
-    print('\n\n\n---------TEST: SELECT * FROM TRANSACTIONS-------\n')
-    results = cur.execute("""
-    SELECT *
-    FROM Transactions
-    """)
-    for row in results:
-        print(row)
