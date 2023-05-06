@@ -2,15 +2,15 @@ import sqlite3 as sql
 import csv
 
 if __name__ == '__main__':
-#TODO: import from csv method
-#    DATAFILENAME = 'Budget.xlsx'
-#    FILEPATH = './'
+    # TODO: import from csv method
+    #    DATAFILENAME = 'Budget.xlsx'
+    #    FILEPATH = './'
 
-    #Connect to database
+    # Connect to database
     con = sql.connect('hft.db')
     cur = con.cursor()
 
-    #Create tables if they don't exist
+    # Create tables if they don't exist
     cur.execute("""
     CREATE TABLE IF NOT EXISTS Transactions(
     TransactionID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
     con.commit()
 
-    #Insert static schema description data
+    # Insert static schema description data
     cur.execute("""
     INSERT OR IGNORE INTO ConfigurationTypes VALUES
     (1, 'Salary'),
@@ -78,12 +78,20 @@ if __name__ == '__main__':
     (3, 'CurrentTransaction')
     """)
 
-    #Insert example data
+    # Insert example data
     with open('findata.csv', newline='') as csvfile:
         reader = csv.reader(csvfile, dialect='excel')
         data = []
         for i, row in enumerate(reader):
             data.append(row)
+            #Remove \ufeff prefix in first element
+            if i == 0:
+                data[0][0] = 1
+            #Set datatypes to match Transactions table
+            data[i][0] = int(data[i][0])
+            data[i][1] = int(data[i][1])
+            data[i][2] = int(data[i][2])
+            data[i][4] = float(data[i][4])
         cur.executemany("INSERT OR IGNORE INTO Transactions VALUES(?, ?, ?, ?, ?)", data)
         con.commit()
 
@@ -100,48 +108,11 @@ if __name__ == '__main__':
     (1, 'Bernardo')
     """)
 
-
-    #Query values as test
+    # Query values as test
+    print('\n\n\n---------TEST: SELECT * FROM TRANSACTIONS-------\n')
     results = cur.execute("""
     SELECT *
     FROM Transactions
-    """)
-    for row in results:
-        print(row)
-
-    results = cur.execute("""
-    SELECT * 
-    FROM Accounts
-    """)
-    for row in results:
-        print(row)
-
-    results = cur.execute("""
-    SELECT * 
-    FROM Users
-    """)
-    for row in results:
-        print(row)
-
-    results = cur.execute("""
-    SELECT * 
-    FROM ConfigurationTypes
-    """)
-    for row in results:
-        print(row)
-
-    results = cur.execute("""
-    SELECT * 
-    FROM TransactionTypes
-    """)
-    for row in results:
-        print(row)
-
-    results = cur.execute("""
-    SELECT SUM(Value)
-    FROM Transactions
-    WHERE AccountID IN (2, 3, 4)
-    AND TransactionTypeID IN (1,2)
     """)
     for row in results:
         print(row)
