@@ -38,6 +38,12 @@ def updateTransaction(TransactionID, AccountID=None,
 
     con.commit()
 
+def getTransactions():
+    results = cur.execute('SELECT * FROM Transactions')
+    results_list = []
+    for row in results:
+        results_list.append(row)
+    return results_list
 
 
 if __name__ == '__main__':

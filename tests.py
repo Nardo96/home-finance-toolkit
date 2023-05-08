@@ -5,10 +5,7 @@ cur = con.cursor()
 
 # Query values as test
 print('\n\n\n---------TEST: SELECT * FROM Transactions-------\n')
-results = cur.execute("""
-SELECT * 
-FROM Transactions
-""")
+results = getTransactions()
 for row in results:
     print(row)
 
