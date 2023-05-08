@@ -77,54 +77,52 @@ class HomeFinanceToolkit:
         transactions_input_container.grid(column=0, row=1, sticky='ew')
         transactions_container.rowconfigure(1, weight=0)
 
-        #Set up input header
-        transactions_input_header = ttk.Frame(transactions_input_container, height=60, width=600,
-                                              relief='ridge')
-        transactions_input_header.grid(column=0, row=0, sticky='ew')
-        for i, header in enumerate(['AccountID', 'Date', 'Value']):
-            l = ttk.Label(transactions_input_header, text=header, anchor=tk.CENTER,
-                          relief='ridge')
-            l.grid(row=0, column=i, sticky='ew')
-        transactions_input_header.columnconfigure(0, weight=1)
-        transactions_input_header.columnconfigure(1, weight=1)
-        transactions_input_header.columnconfigure(2, weight=1)
-
+        #Split input frame into left and right frames
+        transactions_input_container_left = ttk.Frame(transactions_input_container, height=100, width=600)
+        transactions_input_container_left.grid(column=0, row=0, sticky='nsew')
         transactions_input_container.rowconfigure(0, weight=0)
         transactions_input_container.columnconfigure(0, weight=1)
 
-        #Set up input entries
-        transactions_input_entries = ttk.Frame(transactions_input_container, height=40,
-                                               width=600)
-        transactions_input_entries.grid(column=0, row=1, sticky='nsew')
+        #Set up left input entry headers
+        for i, header in enumerate(['Account ID', 'Transaction Type ID', 'Date', 'Value']):
+            l = ttk.Label(transactions_input_container_left, text=header, anchor=tk.CENTER,
+                          relief='ridge')
+            l.grid(row=0, column=i, sticky='ew')
+        transactions_input_container_left.rowconfigure(0, weight=1)
+        transactions_input_container_left.columnconfigure(0, weight=1)
+        transactions_input_container_left.columnconfigure(1, weight=1)
+        transactions_input_container_left.columnconfigure(2, weight=1)
+        transactions_input_container_left.columnconfigure(3, weight=1)
+
+        #Set up left input entries
         account_entry_var = tk.StringVar()
+        transaction_type_entry_var = tk.StringVar()
         date_entry_var = tk.StringVar()
         value_entry_var = tk.StringVar()
-        input_var_list = [account_entry_var, date_entry_var, value_entry_var]
-        for i in range(3):
-            e = ttk.Entry(transactions_input_entries,
+        input_var_list = [account_entry_var, transaction_type_entry_var,
+                          date_entry_var, value_entry_var]
+        for i in range(4):
+            e = ttk.Entry(transactions_input_container_left,
                           textvariable=input_var_list[i])
-            e.grid(row=0, column=i, sticky='nsew')
+            e.grid(row=1, column=i, sticky='nsew')
 
-        transactions_input_entries.columnconfigure(0, weight=1)
-        transactions_input_entries.columnconfigure(1, weight=1)
-        transactions_input_entries.columnconfigure(2, weight=1)
 
-        transactions_input_container.rowconfigure(1, weight=1)
-        transactions_input_container.columnconfigure(0, weight=1)
+        transactions_input_container_left.rowconfigure(1, weight=1)
+
 
         #Set up input buttons
-        transactions_input_buttons = ttk.Frame(transactions_input_container, height=100,
+        transactions_input_container_right = ttk.Frame(transactions_input_container, height=100,
                                                width=300)
-        transactions_input_buttons.grid(row=0, column=1, rowspan=2, sticky='nsew')
+        transactions_input_container_right.grid(row=0, column=1, rowspan=2, sticky='nsew')
         button_names = ['Add Personal Transaction', 'Add Employer Contribution',
                         'Add Current Value', 'Change Transaction Data',
                         'Delete Transaction']
         for i in range(3):
-            b = ttk.Button(transactions_input_buttons, text=button_names[i],
+            b = ttk.Button(transactions_input_container_right, text=button_names[i],
                            padding='0 0 0 0')
             b.grid(column=0, row=i, sticky='nsew')
         for i in range(3, 5):
-            b = ttk.Button(transactions_input_buttons, text=button_names[i],
+            b = ttk.Button(transactions_input_container_right, text=button_names[i],
                            padding='0 0 0 0')
             b.grid(column=1, row=i-3, sticky='nsew')
 
