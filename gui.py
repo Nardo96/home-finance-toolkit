@@ -5,27 +5,25 @@ from tkinter import ttk
 class HomeFinanceToolkit:
     def __init__(self, parent):
         parent.title("Home Finance Toolkit")
-        # parent.geometry('800x500')
 
-        container = ttk.Frame(parent, relief='ridge', padding="12 12 12 12")
+        container = ttk.Notebook(parent, height=450, width=800, padding="0 0 0 0")
         container.grid(column=0, row=0, sticky='nsew')
         parent.columnconfigure(0, weight=1)
         parent.rowconfigure(0, weight=1)
 
-        main_frame = ttk.Frame(container, height=500, width=800, borderwidth=4, relief='ridge')
-        main_frame.grid(column=0, row=0, sticky='nsew')
-        tabs_bar = ttk.Frame(container, height=50, width=800, borderwidth=4, relief='ridge')
-        tabs_bar.grid(column=0, row=1, sticky='we')
+        transactions_frame = ttk.Frame(container, height=500, width=800, borderwidth=4,
+                                       relief="ridge")
+        transactions_frame.grid(column=0, row=0, sticky='nsew')
+
+        options_frame = ttk.Frame(container, height=500, width=800, borderwidth=4,
+                                  relief="ridge")
+        options_frame.grid(column=0, row=0, sticky='nsew')
 
         container.columnconfigure(0, weight=1)
         container.rowconfigure(0, weight=1)
-        container.rowconfigure(1, weight=0)
+        container.add(transactions_frame, text="Transactions")
+        container.add(options_frame, text="Options")
 
-
-        ttk.Label(tabs_bar, text='Transactions').grid(column=0, row=0, sticky='nsew')
-        ttk.Label(tabs_bar, text='Options').grid(column=1, row=0, sticky='nsew')
-        tabs_bar.columnconfigure(0, weight=1)
-        tabs_bar.rowconfigure(0, weight=1)
 
 
 
