@@ -41,17 +41,20 @@ class HomeFinanceToolkit:
         data_filtered = []
         for row in data:
             if row[5] != 1:
-                data_filtered.append(row[0:2] + row[3:5])
+                data_filtered.append(row[0:5])
 
         transactions_table = ttk.Treeview(transactions_container)
-        transactions_table['columns'] = ('TransactionID', 'AccountID', 'Date', 'Value')
+        transactions_table['columns'] = ('TransactionID', 'AccountID', 'TransactionTypeID',
+                                         'Date', 'Value')
         transactions_table.column('#0', width=0, stretch=tk.NO)
         transactions_table.column('TransactionID', anchor=tk.CENTER,width=20)
         transactions_table.column('AccountID', anchor=tk.CENTER, width=20)
+        transactions_table.column('TransactionTypeID', anchor=tk.CENTER, width=20)
         transactions_table.column('Date', anchor=tk.CENTER, width=80)
         transactions_table.column('Value', anchor=tk.CENTER, width=40)
         transactions_table.heading('#0', text='', anchor=tk.CENTER)
         transactions_table.heading('TransactionID', text='Transaction ID', anchor=tk.CENTER)
+        transactions_table.heading('TransactionTypeID', text='Transaction Type ID', anchor=tk.CENTER)
         transactions_table.heading('AccountID', text='Account ID', anchor=tk.CENTER)
         transactions_table.heading('Date', text='Date', anchor=tk.CENTER)
         transactions_table.heading('Value', text='Value', anchor=tk.CENTER)
@@ -70,9 +73,60 @@ class HomeFinanceToolkit:
         #     transactions_table.rowconfigure(x, weight=1)
 
         #Set up input frame
-        transactions_input_frame = ttk.Frame(transactions_frame, height=80, width=800,
-                                             relief="ridge")
-        transactions_input_frame.grid(column=0, row=1, sticky='sew')
+        transactions_input_container = ttk.Frame(transactions_frame, height=100, width=800)
+        transactions_input_container.grid(column=0, row=1, sticky='ew')
+        transactions_container.rowconfigure(1, weight=0)
+
+        #Set up input header
+        transactions_input_header = ttk.Frame(transactions_input_container, height=60, width=600,
+                                              relief='ridge')
+        transactions_input_header.grid(column=0, row=0, sticky='ew')
+        for i, header in enumerate(['AccountID', 'Date', 'Value']):
+            l = ttk.Label(transactions_input_header, text=header, anchor=tk.CENTER,
+                          relief='ridge')
+            l.grid(row=0, column=i, sticky='ew')
+        transactions_input_header.columnconfigure(0, weight=1)
+        transactions_input_header.columnconfigure(1, weight=1)
+        transactions_input_header.columnconfigure(2, weight=1)
+
+        transactions_input_container.rowconfigure(0, weight=0)
+        transactions_input_container.columnconfigure(0, weight=1)
+
+        #Set up input entries
+        transactions_input_entries = ttk.Frame(transactions_input_container, height=40,
+                                               width=600)
+        transactions_input_entries.grid(column=0, row=1, sticky='nsew')
+        account_entry_var = tk.StringVar()
+        date_entry_var = tk.StringVar()
+        value_entry_var = tk.StringVar()
+        input_var_list = [account_entry_var, date_entry_var, value_entry_var]
+        for i in range(3):
+            e = ttk.Entry(transactions_input_entries,
+                          textvariable=input_var_list[i])
+            e.grid(row=0, column=i, sticky='nsew')
+
+        transactions_input_entries.columnconfigure(0, weight=1)
+        transactions_input_entries.columnconfigure(1, weight=1)
+        transactions_input_entries.columnconfigure(2, weight=1)
+
+        transactions_input_container.rowconfigure(1, weight=1)
+        transactions_input_container.columnconfigure(0, weight=1)
+
+        #Set up input buttons
+        transactions_input_buttons = ttk.Frame(transactions_input_container, height=100,
+                                               width=300)
+        transactions_input_buttons.grid(row=0, column=1, rowspan=2, sticky='nsew')
+        button_names = ['Add Personal Transaction', 'Add Employer Contribution',
+                        'Add Current Value', 'Change Transaction Data',
+                        'Delete Transaction']
+        for i in range(3):
+            b = ttk.Button(transactions_input_buttons, text=button_names[i],
+                           padding='0 0 0 0')
+            b.grid(column=0, row=i, sticky='nsew')
+        for i in range(3, 5):
+            b = ttk.Button(transactions_input_buttons, text=button_names[i],
+                           padding='0 0 0 0')
+            b.grid(column=1, row=i-3, sticky='nsew')
 
         for child in transactions_frame.winfo_children():
             x = child.winfo_x()
