@@ -95,6 +95,7 @@ class HomeFinanceToolkit:
         transactions_input_container_left.columnconfigure(3, weight=1)
 
         #Set up left input entries
+        transaction_id_var = tk.StringVar()
         account_entry_var = tk.StringVar()
         transaction_type_entry_var = tk.StringVar()
         date_entry_var = tk.StringVar()
@@ -114,17 +115,48 @@ class HomeFinanceToolkit:
         transactions_input_container_right = ttk.Frame(transactions_input_container, height=100,
                                                width=300)
         transactions_input_container_right.grid(row=0, column=1, rowspan=2, sticky='nsew')
-        button_names = ['Add Personal Transaction', 'Add Employer Contribution',
-                        'Add Current Value', 'Change Transaction Data',
-                        'Delete Transaction']
-        for i in range(3):
-            b = ttk.Button(transactions_input_container_right, text=button_names[i],
-                           padding='0 0 0 0')
-            b.grid(column=0, row=i, sticky='nsew')
-        for i in range(3, 5):
-            b = ttk.Button(transactions_input_container_right, text=button_names[i],
-                           padding='0 0 0 0')
-            b.grid(column=1, row=i-3, sticky='nsew')
+
+        rowcount = len(data)
+
+        def addTransactionTable(AccountID, TransactionTypeID, Date, Value):
+            nonlocal rowcount
+            addTransaction(AccountID, TransactionTypeID, Date, Value)
+            rowcount += 1
+            row = [rowcount, AccountID, TransactionTypeID, Date, Value]
+            transactions_table.insert(parent='', index='end', iid=rowcount, text='',
+                                      values=row)
+            account_entry_var.set('')
+            transaction_type_entry_var.set('')
+            date_entry_var.set('')
+            value_entry_var.set('')
+
+        add_transaction_button = ttk.Button(transactions_input_container_right,
+                                   text='Add Transaction',
+                                   command=lambda: addTransactionTable(int(account_entry_var.get()),
+                                                                  int(transaction_type_entry_var.get()),
+                                                                  date_entry_var.get(),
+                                                                  float(value_entry_var.get())))
+        add_transaction_button.grid(column=0, row=0, sticky='nsew')
+
+        def changeTransactionTable(TransactionID, AccountID, TransactionTypeID, Date, Value):
+            updateTransaction(TransactionID, AccountID, TransactionTypeID, Date, Value)
+            values = [TransactionID, AccountID, TransactionTypeID, Date, Value]
+
+
+        change_transaction_button = ttk.Button(transactions_input_container_right,
+                                       text='Change Transaction Data',
+                                       command=lambda: updateTransaction(TransactionID=transaction_id_var,
+                                                                         AccountID=account_entry_var,
+                                                                         TransactionTypeID=transaction_type_entry_var,
+                                                                         Date=date_entry_var,
+                                                                         Value=value_entry_var))
+        change_transaction_button.grid(column=1, row=0, sticky='nsew')
+
+        delete_transaction_button = ttk.Button(transactions_input_container_right,
+                                               text='Delete Transaction',
+                                               command=lambda: deleteTransaction(TransactionID=transaction_id_var))
+        delete_transaction_button.grid(column=2, row=0, sticky='nsew')
+        #Assign commands to buttons
 
         for child in transactions_frame.winfo_children():
             x = child.winfo_x()

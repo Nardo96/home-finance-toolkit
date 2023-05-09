@@ -6,12 +6,16 @@ con = sql.connect('hft.db')
 cur = con.cursor()
 
 def addTransaction(AccountID, TransactionTypeID, Date, Value):
-    row = [AccountID, TransactionTypeID, Date, Value]
-    cur.execute("""
-    INSERT INTO Transactions(AccountID, TransactionTypeID, Date, Value)
-    VALUES (?,?,?,?)
-    """, row)
-    con.commit()
+    try:
+        row = [AccountID, TransactionTypeID, Date, Value]
+        cur.execute("""
+        INSERT INTO Transactions(AccountID, TransactionTypeID, Date, Value)
+        VALUES (?,?,?,?)
+        """, row)
+        con.commit()
+    except:
+        print("Input Error in addTransaction")
+
 
 def deleteTransaction(TransactionID):
     cur.execute(f'UPDATE Transactions SET IsDeleted = 1 \
@@ -20,21 +24,24 @@ def deleteTransaction(TransactionID):
 
 def updateTransaction(TransactionID, AccountID=None,
                       TransactionTypeID=None, Date=None, Value=None, IsDeleted=None):
-    if AccountID != None:
-        cur.execute(f'UPDATE Transactions SET AccountID = {AccountID} \
-        WHERE TransactionID = CAST({TransactionID} AS INTEGER)')
-    if TransactionTypeID != None:
-        cur.execute(f'UPDATE Transactions SET TransactionTypeID = {TransactionTypeID} \
-        WHERE TransactionID = CAST({TransactionID} AS INTEGER)')
-    if Date != None:
-        cur.execute(f'Update Transactions SET Date = {Date} \
-        WHERE TransactionID = CAST({TransactionID} AS INTEGER)')
-    if Value != None:
-        cur.execute(f'UPDATE Transactions SET Value = {Value} \
-        WHERE TransactionID = CAST({TransactionID} AS INTEGER)')
-    if IsDeleted != None:
-        cur.execute(f'UPDATE Transactions SET IsDeleted = {IsDeleted} \
-        WHERE TransactionID = CAST({TransactionID} AS INTEGER)')
+    try:
+        if AccountID != None:
+            cur.execute(f'UPDATE Transactions SET AccountID = {AccountID} \
+            WHERE TransactionID = CAST({TransactionID} AS INTEGER)')
+        if TransactionTypeID != None:
+            cur.execute(f'UPDATE Transactions SET TransactionTypeID = {TransactionTypeID} \
+            WHERE TransactionID = CAST({TransactionID} AS INTEGER)')
+        if Date != None:
+            cur.execute(f'Update Transactions SET Date = {Date} \
+            WHERE TransactionID = CAST({TransactionID} AS INTEGER)')
+        if Value != None:
+            cur.execute(f'UPDATE Transactions SET Value = {Value} \
+            WHERE TransactionID = CAST({TransactionID} AS INTEGER)')
+        if IsDeleted != None:
+            cur.execute(f'UPDATE Transactions SET IsDeleted = {IsDeleted} \
+            WHERE TransactionID = CAST({TransactionID} AS INTEGER)')
+    except:
+        print("Input error in updateTransaction")
 
     con.commit()
 
