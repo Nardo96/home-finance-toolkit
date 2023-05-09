@@ -119,6 +119,7 @@ class HomeFinanceToolkit:
         rowcount = len(data)
 
         def addTransactionTable(AccountID, TransactionTypeID, Date, Value):
+            #Add transaction to DB, update GUI table, and set inputs back to blank
             nonlocal rowcount
             addTransaction(AccountID, TransactionTypeID, Date, Value)
             rowcount += 1
@@ -138,18 +139,28 @@ class HomeFinanceToolkit:
                                                                   float(value_entry_var.get())))
         add_transaction_button.grid(column=0, row=0, sticky='nsew')
 
-        def changeTransactionTable(TransactionID, AccountID, TransactionTypeID, Date, Value):
-            updateTransaction(TransactionID, AccountID, TransactionTypeID, Date, Value)
-            values = [TransactionID, AccountID, TransactionTypeID, Date, Value]
+        def changeTransactionTable(AccountID, TransactionTypeID, Date, Value):
+            #Get ID of selected item, update DB values and table, and reset input to blank
+            selected_item = transactions_table.focus()
+            transactionID = int(transactions_table.item(selected_item)['values'][0])
+            updateTransaction(transactionID, AccountID, TransactionTypeID, Date, Value)
+            values = [AccountID, TransactionTypeID, Date, Value]
+            for i in range(4):
+                transactions_table.set(selected_item, column=i+1, value=values[i])
+            for item in transactions_table.selection():
+                transactions_table.selection_remove(item)
+            account_entry_var.set('')
+            transaction_type_entry_var.set('')
+            date_entry_var.set('')
+            value_entry_var.set('')
 
 
         change_transaction_button = ttk.Button(transactions_input_container_right,
                                        text='Change Transaction Data',
-                                       command=lambda: updateTransaction(TransactionID=transaction_id_var,
-                                                                         AccountID=account_entry_var,
-                                                                         TransactionTypeID=transaction_type_entry_var,
-                                                                         Date=date_entry_var,
-                                                                         Value=value_entry_var))
+                                       command=lambda: changeTransactionTable(int(account_entry_var.get()),
+                                                                         int(transaction_type_entry_var.get()),
+                                                                         date_entry_var.get(),
+                                                                         float(value_entry_var.get())))
         change_transaction_button.grid(column=1, row=0, sticky='nsew')
 
         delete_transaction_button = ttk.Button(transactions_input_container_right,
