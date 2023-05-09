@@ -45,12 +45,24 @@ def updateTransaction(TransactionID, AccountID=None,
 
     con.commit()
 
-def getTransactions():
-    results = cur.execute('SELECT * FROM Transactions')
-    results_list = []
-    for row in results:
-        results_list.append(row)
-    return results_list
+def getTransactions(userid=None):
+    if userid != None:
+        results = cur.execute(f'SELECT * FROM Transactions t '
+                              f'JOIN Accounts a ON t.AccountID = a.AccountID '
+                              f'JOIN Users u ON a.UserID = u.UserID '
+                              f'WHERE u.UserID = {int(userid)} '
+                              f'AND IFNULL(IsDeleted, 0)=0')
+        results_list = []
+        for row in results:
+            results_list.append(row)
+        return results_list
+    else:
+        results = cur.execute('SELECT * FROM Transactions WHERE IFNULL(IsDeleted, 0)=0')
+        results_list = []
+        for row in results:
+            results_list.append(row)
+        return results_list
+
 
 def getDeletedTransactions():
     results = cur.execute('SELECT * FROM Transactions WHERE IsDeleted=1')

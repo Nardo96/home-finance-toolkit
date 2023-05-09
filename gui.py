@@ -39,40 +39,35 @@ class HomeFinanceToolkit:
 
         #Set up data table
         #Set up header and add data filtered for selected columns
-        data = getTransactions()
-        data_filtered = []
-        for row in data:
-            if row[5] != 1:
-                data_filtered.append(row[0:5])
+        def createTransactionTable(userid):
+            data = getTransactions(int(userid))
 
-        transactions_table = ttk.Treeview(transactions_container)
-        transactions_table['columns'] = ('TransactionID', 'AccountID', 'TransactionTypeID',
-                                         'Date', 'Value')
-        transactions_table.column('#0', width=0, stretch=tk.NO)
-        transactions_table.column('TransactionID', anchor=tk.CENTER,width=20)
-        transactions_table.column('AccountID', anchor=tk.CENTER, width=20)
-        transactions_table.column('TransactionTypeID', anchor=tk.CENTER, width=20)
-        transactions_table.column('Date', anchor=tk.CENTER, width=80)
-        transactions_table.column('Value', anchor=tk.CENTER, width=40)
-        transactions_table.heading('#0', text='', anchor=tk.CENTER)
-        transactions_table.heading('TransactionID', text='Transaction ID', anchor=tk.CENTER)
-        transactions_table.heading('TransactionTypeID', text='Transaction Type ID', anchor=tk.CENTER)
-        transactions_table.heading('AccountID', text='Account ID', anchor=tk.CENTER)
-        transactions_table.heading('Date', text='Date', anchor=tk.CENTER)
-        transactions_table.heading('Value', text='Value', anchor=tk.CENTER)
+            transactions_table = ttk.Treeview(transactions_container)
+            transactions_table['columns'] = ('TransactionID', 'Account', 'Transaction Type',
+                                             'Date', 'Value')
+            transactions_table.column('#0', width=0, stretch=tk.NO)
+            transactions_table.column('TransactionID', anchor=tk.CENTER,width=20)
+            transactions_table.column('Account', anchor=tk.CENTER, width=20)
+            transactions_table.column('Transaction Type', anchor=tk.CENTER, width=20)
+            transactions_table.column('Date', anchor=tk.CENTER, width=80)
+            transactions_table.column('Value', anchor=tk.CENTER, width=40)
+            transactions_table.heading('#0', text='', anchor=tk.CENTER)
+            transactions_table.heading('TransactionID', text='Transaction ID', anchor=tk.CENTER)
+            transactions_table.heading('Account', text='Transaction Type ID', anchor=tk.CENTER)
+            transactions_table.heading('Transaction Type', text='Account ID', anchor=tk.CENTER)
+            transactions_table.heading('Date', text='Date', anchor=tk.CENTER)
+            transactions_table.heading('Value', text='Value', anchor=tk.CENTER)
 
-        for i, row in enumerate(data_filtered):
-            transactions_table.insert(parent='', index='end', iid=i, text='',
-                                      values=row)
-        transactions_table.grid(column=0, row=0, sticky='nsew')
-        transactions_container.rowconfigure(0, weight=1)
-        transactions_container.columnconfigure(0, weight=1)
+            for i, row in enumerate(data):
+                transactions_table.insert(parent='', index='end', iid=i, text='',
+                                          values=row)
+            transactions_table.grid(column=0, row=0, sticky='nsew')
+            transactions_container.rowconfigure(0, weight=1)
+            transactions_container.columnconfigure(0, weight=1)
 
-        # for child in transactions_table.winfo_children():
-        #     x = child.winfo_x()
-        #     y = child.winfo_y()
-        #     transactions_table.columnconfigure(y, weight=1)
-        #     transactions_table.rowconfigure(x, weight=1)
+            return transactions_table
+
+        transactions_table = createTransactionTable(1)
 
         #Set up input frame
         transactions_input_container = ttk.Frame(transactions_frame, height=100, width=800)
@@ -97,7 +92,6 @@ class HomeFinanceToolkit:
         transactions_input_container_left.columnconfigure(3, weight=1)
 
         #Set up left input entries
-        transaction_id_var = tk.StringVar()
         account_entry_var = tk.StringVar()
         transaction_type_entry_var = tk.StringVar()
         date_entry_var = tk.StringVar()
@@ -118,7 +112,8 @@ class HomeFinanceToolkit:
                                                width=300)
         transactions_input_container_right.grid(row=0, column=1, rowspan=2, sticky='nsew')
 
-        rowcount = len(data)
+        all_data = getTransactions() + getDeletedTransactions()
+        rowcount = len(all_data)
 
         def addTransactionTable(AccountID, TransactionTypeID, Date, Value):
             #Add transaction to DB, update GUI table, and set inputs back to blank
