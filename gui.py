@@ -12,6 +12,8 @@ class HomeFinanceToolkit:
         parent.columnconfigure(0, weight=1)
         parent.rowconfigure(0, weight=1)
 
+        #--------------------------SET UP TRANSACTIONS TAB---------------------
+
         #Create individual tab frames and grid to container
         transactions_frame = ttk.Frame(container, height=500, width=800, borderwidth=4,
                                        relief="ridge")
@@ -182,6 +184,8 @@ class HomeFinanceToolkit:
             y = child.winfo_y()
             transactions_frame.columnconfigure(y, weight=1)
             transactions_frame.rowconfigure(x, weight=1)
+
+
 
 
 

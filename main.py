@@ -59,6 +59,46 @@ def getDeletedTransactions():
         results_list.append(row)
     return results_list
 
+def getUsers():
+    results = cur.execute('SELECT * FROM Users')
+    results_list = []
+    for row in results:
+        results_list.append(row)
+    return results_list
+
+def addUser(username):
+    values = [username]
+    cur.execute("INSERT INTO Users(Name) VALUES (?)", values)
+
+def deleteUser(userid):
+    values = [userid]
+    cur.execute("DELETE FROM Users WHERE UserID = ?", values)
+
+
+def getAccounts(userid=None):
+    if userid != None:
+        results = cur.execute(f'SELECT * FROM Accounts WHERE UserID={int(userid)}')
+        results_list = []
+        for row in results:
+            results_list.append(row)
+        return results_list
+    else:
+        results = cur.execute('SELECT * FROM Accounts')
+        results_list = []
+        for row in results:
+            results_list.append(row)
+        return results_list
+def addAccount(account_name, userid, checking, retirement):
+    values = [account_name, int(userid), int(checking), int(retirement)]
+    cur.execute("INSERT INTO Accounts(AccountName, UserID, Checking, [401k]) \
+                VALUES (?, ?, ?, ?)", values)
+
+def deleteAccount(accountID):
+    values = [accountID]
+    cur.execute("DELETE FROM Accounts WHERE AccountID = ?", values)
+
+
+
 if __name__ == '__main__':
     # TODO: import from csv method
     #    DATAFILENAME = 'Budget.xlsx'
@@ -168,3 +208,18 @@ if __name__ == '__main__':
     con.commit()
 
 print(getDeletedTransactions())
+print(getUsers())
+print(getAccounts())
+print(getAccounts(1))
+print(getAccounts(2))
+
+addUser('testuser')
+addAccount('testaccount', 2, 0, 0)
+print(getUsers())
+print(getAccounts())
+print(getAccounts(2))
+deleteAccount(5)
+print(getAccounts())
+print(getAccounts(2))
+deleteUser(2)
+print(getUsers())
