@@ -52,6 +52,12 @@ def getTransactions():
         results_list.append(row)
     return results_list
 
+def getDeletedTransactions():
+    results = cur.execute('SELECT * FROM Transactions WHERE IsDeleted=1')
+    results_list = []
+    for row in results:
+        results_list.append(row)
+    return results_list
 
 if __name__ == '__main__':
     # TODO: import from csv method
@@ -161,3 +167,4 @@ if __name__ == '__main__':
     """)
     con.commit()
 
+print(getDeletedTransactions())

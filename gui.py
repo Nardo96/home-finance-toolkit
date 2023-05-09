@@ -163,11 +163,19 @@ class HomeFinanceToolkit:
                                                                          float(value_entry_var.get())))
         change_transaction_button.grid(column=1, row=0, sticky='nsew')
 
+        def deleteTransactionTable():
+            #Take selected row and delete from db (isDeleted=1) and table
+            selected_item = transactions_table.focus()
+            transactionID = transactions_table.item(selected_item)['values'][0]
+            deleteTransaction(transactionID)
+            transactions_table.delete(selected_item)
+
+
         delete_transaction_button = ttk.Button(transactions_input_container_right,
                                                text='Delete Transaction',
-                                               command=lambda: deleteTransaction(TransactionID=transaction_id_var))
+                                               command=deleteTransactionTable)
         delete_transaction_button.grid(column=2, row=0, sticky='nsew')
-        #Assign commands to buttons
+
 
         for child in transactions_frame.winfo_children():
             x = child.winfo_x()
