@@ -23,7 +23,7 @@ class HomeFinanceToolkit:
         container.add(users_frame, text='Users and Accounts')
 
         #Split frame into two smaller left and right frames
-        users_frame_left = ttk.Frame(users_frame, height=500, width=400, borderwidth=4,
+        users_frame_left = ttk.Frame(users_frame, height=500, width=200, borderwidth=4,
                                      relief='ridge')
         users_frame_left.grid(column=0, row=0, sticky='nsew')
 
@@ -32,8 +32,8 @@ class HomeFinanceToolkit:
         users_frame_right.grid(column=1, row=0, sticky='nsew')
 
         users_frame.rowconfigure(0, weight=1)
-        users_frame.columnconfigure(0, weight=1)
-        users_frame.columnconfigure(1, weight=1)
+        users_frame.columnconfigure(0, weight=0)
+        users_frame.columnconfigure(1, weight=3)
 
         #Set up users in the left frame
         def loadUsers():
@@ -44,8 +44,7 @@ class HomeFinanceToolkit:
                 user_names.append(user[1])
 
             users_var = tk.StringVar(value=user_names)
-
-            users_listbox = tk.Listbox(users_frame_left, height=10, listvariable=users_var)
+            users_listbox = tk.Listbox(users_frame_left, height=10, width=12, listvariable=users_var)
             users_listbox.grid(column=0, row=0, sticky='nsew')
             return users_listbox
 
@@ -53,7 +52,7 @@ class HomeFinanceToolkit:
         users_frame_left.rowconfigure(0, weight=1)
         users_frame_left.columnconfigure(0, weight=1)
 
-        #Add buttons to add or delete users
+        #Add buttons to add, delete, or select users
         def addNewUser(user_name):
             nonlocal users_listbox
             nonlocal user_name_var
@@ -71,9 +70,9 @@ class HomeFinanceToolkit:
                                       command=lambda: addNewUser(user_name_var.get()))
 
         users_add_entry.grid(column=0, row=0)
-        users_add_button.grid(column=1, row=0)
+        users_add_button.grid(column=0, row=1)
         users_buttons_frame.rowconfigure(0, weight=1)
-        users_buttons_frame.columnconfigure(0, weight=1)
+        users_buttons_frame.rowconfigure(1, weight=1)
         users_buttons_frame.columnconfigure(0, weight=1)
 
         def deleteExistingUser():
@@ -89,10 +88,61 @@ class HomeFinanceToolkit:
 
         users_delete_button = ttk.Button(users_buttons_frame, text='Delete User',
                                          command= deleteExistingUser)
-        users_delete_button.grid(column=2, row=0)
-        users_buttons_frame.columnconfigure(0, weight=1)
+        users_delete_button.grid(column=0, row=2)
+        users_buttons_frame.rowconfigure(2, weight=1)
 
+        selected_user_id = tk.StringVar()
+        selected_user_id.set(1)
+        def selectUser():
+            nonlocal selected_user_id
+            nonlocal users_listbox
 
+            user_list = getUsers()
+            user_ids = {}
+            for user in user_list:
+                user_ids[user[1]] = user[0]
+
+            selected_index = users_listbox.curselection()
+            selected_user_id.set((user_ids[users_listbox.get(selected_index)]))
+            print(selected_user_id.get())
+            loadAccounts()
+            users_listbox.selection_clear(0, tk.END)
+
+        user_select_button = ttk.Button(users_buttons_frame, text='Select User',
+                                        command= selectUser)
+        user_select_button.grid(column=0, row=3)
+        users_buttons_frame.rowconfigure(3, weight=1)
+        #Set up right Accounts frame
+        def loadAccounts():
+            nonlocal users_frame_right
+            nonlocal selected_user_id
+            userid = int(selected_user_id.get())
+            accounts_list = getAccounts(userid)
+
+            accounts_table = ttk.Treeview(users_frame_right)
+            accounts_table['columns'] = ('Account ID', 'Account Name', 'Checking', '401k')
+
+            accounts_table.column('#0', width=0, stretch=tk.NO)
+            accounts_table.column('Account ID', anchor=tk.CENTER, width=20)
+            accounts_table.column('Account Name', anchor=tk.CENTER, width=20)
+            accounts_table.column('Checking', anchor=tk.CENTER, width=20)
+            accounts_table.column('401k', anchor=tk.CENTER, width=80)
+            accounts_table.heading('#0', text='', anchor=tk.CENTER)
+            accounts_table.heading('Account ID', text='Account ID', anchor=tk.CENTER)
+            accounts_table.heading('Account Name', text='Account Name', anchor=tk.CENTER)
+            accounts_table.heading('Checking', text='Checking', anchor=tk.CENTER)
+            accounts_table.heading('401k', text='401k', anchor=tk.CENTER)
+
+            for i, row in enumerate(accounts_list):
+                accounts_table.insert(parent='', index='end', iid=i, text='',
+                                          values=row)
+            accounts_table.grid(column=0, row=0, sticky='nsew')
+
+            return accounts_table
+
+        accounts_table = loadAccounts()
+        users_frame_right.rowconfigure(0, weight=1)
+        users_frame_right.columnconfigure(0, weight=1)
 
 
 
