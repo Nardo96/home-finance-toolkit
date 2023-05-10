@@ -99,6 +99,7 @@ class HomeFinanceToolkit:
             nonlocal selected_user_id
             nonlocal users_listbox
             nonlocal accounts_table
+            nonlocal transactions_table
 
             user_list = getUsers()
             user_ids = {}
@@ -109,8 +110,8 @@ class HomeFinanceToolkit:
             selected_user_id.set((user_ids[users_listbox.get(selected_index)]))
             id = int(selected_user_id.get())
             print(id)
-            accounts_table = loadAccounts()
-            createTransactionTable(id)
+            accounts_table = createAccountsTable()
+            transactions_table = createTransactionTable(id)
             users_listbox.selection_clear(0, tk.END)
 
         user_select_button = ttk.Button(users_buttons_frame, text='Select User',
@@ -120,7 +121,7 @@ class HomeFinanceToolkit:
 
         #Set up right Accounts frame
         #Set up Accounts table
-        def loadAccounts():
+        def createAccountsTable():
             nonlocal users_frame_right
             nonlocal selected_user_id
             userid = int(selected_user_id.get())
@@ -150,7 +151,7 @@ class HomeFinanceToolkit:
 
             return accounts_table
 
-        accounts_table = loadAccounts()
+        accounts_table = createAccountsTable()
         users_frame_right.rowconfigure(0, weight=1)
         users_frame_right.columnconfigure(0, weight=1)
 
@@ -186,9 +187,10 @@ class HomeFinanceToolkit:
 
         def createNewAccount(account_name, checking, retirement):
             nonlocal accounts_count
+            nonlocal accounts_table
             addAccount(account_name, selected_user_id.get(), checking, retirement)
             accounts_count += 1
-            loadAccounts()
+            accounts_table = createAccountsTable()
             account_name_entry.set('')
             account_checking_entry.set('')
             account_retirement_entry.set('')
@@ -248,8 +250,8 @@ class HomeFinanceToolkit:
             transactions_table.column('Value', anchor=tk.CENTER, width=40)
             transactions_table.heading('#0', text='', anchor=tk.CENTER)
             transactions_table.heading('TransactionID', text='Transaction ID', anchor=tk.CENTER)
-            transactions_table.heading('Account', text='Transaction Type ID', anchor=tk.CENTER)
-            transactions_table.heading('Transaction Type', text='Account ID', anchor=tk.CENTER)
+            transactions_table.heading('Account', text='Account', anchor=tk.CENTER)
+            transactions_table.heading('Transaction Type', text='Transaction Type', anchor=tk.CENTER)
             transactions_table.heading('Date', text='Date', anchor=tk.CENTER)
             transactions_table.heading('Value', text='Value', anchor=tk.CENTER)
 
@@ -309,11 +311,10 @@ class HomeFinanceToolkit:
         def addTransactionTable(account_id, transaction_type_id, date, value):
             #Add transaction to DB, update GUI table, and set inputs back to blank
             nonlocal rowcount
+            nonlocal transactions_table
             addTransaction(account_id, transaction_type_id, date, value)
             rowcount += 1
-            row = [rowcount, account_id, transaction_type_id, date, value]
-            transactions_table.insert(parent='', index='end', iid=rowcount, text='',
-                                      values=row)
+            transactions_table = createTransactionTable(selected_user_id.get())
             account_entry_var.set('')
             transaction_type_entry_var.set('')
             date_entry_var.set('')
