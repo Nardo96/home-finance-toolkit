@@ -47,15 +47,19 @@ class HomeFinanceToolkit:
 
             users_listbox = tk.Listbox(users_frame_left, height=10, listvariable=users_var)
             users_listbox.grid(column=0, row=0, sticky='nsew')
+            return users_listbox
 
-        loadUsers()
+        users_listbox = loadUsers()
         users_frame_left.rowconfigure(0, weight=1)
         users_frame_left.columnconfigure(0, weight=1)
 
         #Add buttons to add or delete users
         def addNewUser(user_name):
+            nonlocal users_listbox
+            nonlocal user_name_var
             addUser(user_name)
-            loadUsers()
+            users_listbox = loadUsers()
+            user_name_var.set('')
 
         users_buttons_frame = ttk.Frame(users_frame_left)
         users_buttons_frame.grid(column=0, row=1, sticky='nsew')
@@ -69,8 +73,25 @@ class HomeFinanceToolkit:
         users_add_entry.grid(column=0, row=0)
         users_add_button.grid(column=1, row=0)
         users_buttons_frame.rowconfigure(0, weight=1)
-        users_buttons_frame.columnconfigure(0, weight=0)
-        users_buttons_frame.columnconfigure(0, weight=0)
+        users_buttons_frame.columnconfigure(0, weight=1)
+        users_buttons_frame.columnconfigure(0, weight=1)
+
+        def deleteExistingUser():
+            nonlocal users_listbox
+            user_list = getUsers()
+            user_ids = {}
+            for user in user_list:
+                user_ids[user[1]] = user[0]
+
+            selected_index = users_listbox.curselection()
+            deleteUser(user_ids[users_listbox.get(selected_index)])
+            users_listbox.delete(selected_index)
+
+        users_delete_button = ttk.Button(users_buttons_frame, text='Delete User',
+                                         command= deleteExistingUser)
+        users_delete_button.grid(column=2, row=0)
+        users_buttons_frame.columnconfigure(0, weight=1)
+
 
 
 
