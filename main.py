@@ -81,10 +81,12 @@ def getUsers():
 def addUser(username):
     values = [username]
     cur.execute("INSERT INTO Users(Name) VALUES (?)", values)
+    con.commit()
 
 def deleteUser(userid):
     values = [userid]
     cur.execute("DELETE FROM Users WHERE UserID = ?", values)
+    con.commit()
 
 
 def getAccounts(userid=None):
@@ -104,10 +106,12 @@ def addAccount(account_name, userid, checking, retirement):
     values = [account_name, int(userid), int(checking), int(retirement)]
     cur.execute("INSERT INTO Accounts(AccountName, UserID, Checking, [401k]) \
                 VALUES (?, ?, ?, ?)", values)
+    con.commit()
 
 def deleteAccount(accountID):
     values = [accountID]
     cur.execute("DELETE FROM Accounts WHERE AccountID = ?", values)
+    con.commit()
 
 
 
@@ -219,19 +223,19 @@ if __name__ == '__main__':
     """)
     con.commit()
 
-print(getDeletedTransactions())
-print(getUsers())
-print(getAccounts())
-print(getAccounts(1))
-print(getAccounts(2))
-
-addUser('testuser')
-addAccount('testaccount', 2, 0, 0)
-print(getUsers())
-print(getAccounts())
-print(getAccounts(2))
-deleteAccount(5)
-print(getAccounts())
-print(getAccounts(2))
-deleteUser(2)
-print(getUsers())
+# print(getDeletedTransactions())
+# print(getUsers())
+# print(getAccounts())
+# print(getAccounts(1))
+# print(getAccounts(2))
+#
+# addUser('testuser')
+# addAccount('testaccount', 2, 0, 0)
+# print(getUsers())
+# print(getAccounts())
+# print(getAccounts(2))
+# deleteAccount(5)
+# print(getAccounts())
+# print(getAccounts(2))
+# deleteUser(2)
+# print(getUsers())

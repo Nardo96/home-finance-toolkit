@@ -12,6 +12,70 @@ class HomeFinanceToolkit:
         parent.columnconfigure(0, weight=1)
         parent.rowconfigure(0, weight=1)
 
+        #Make tabs expandable/shrinkable to window size
+        container.columnconfigure(0, weight=1)
+        container.rowconfigure(0, weight=1)
+
+        #--------------------------SET UP USERS AND ACCOUNTS TAB----------------------------
+        #Create Users and Accounts frame
+        users_frame = ttk.Frame(container, height=500, width=800)
+        users_frame.grid(column=0, row=0, sticky='nsew')
+        container.add(users_frame, text='Users and Accounts')
+
+        #Split frame into two smaller left and right frames
+        users_frame_left = ttk.Frame(users_frame, height=500, width=400, borderwidth=4,
+                                     relief='ridge')
+        users_frame_left.grid(column=0, row=0, sticky='nsew')
+
+        users_frame_right = ttk.Frame(users_frame, height=500, width=400, borderwidth=4,
+                                      relief='ridge')
+        users_frame_right.grid(column=1, row=0, sticky='nsew')
+
+        users_frame.rowconfigure(0, weight=1)
+        users_frame.columnconfigure(0, weight=1)
+        users_frame.columnconfigure(1, weight=1)
+
+        #Set up users in the left frame
+        def loadUsers():
+            nonlocal users_frame_left
+            users = getUsers()
+            user_names = []
+            for user in users:
+                user_names.append(user[1])
+
+            users_var = tk.StringVar(value=user_names)
+
+            users_listbox = tk.Listbox(users_frame_left, height=10, listvariable=users_var)
+            users_listbox.grid(column=0, row=0, sticky='nsew')
+
+        loadUsers()
+        users_frame_left.rowconfigure(0, weight=1)
+        users_frame_left.columnconfigure(0, weight=1)
+
+        #Add buttons to add or delete users
+        def addNewUser(user_name):
+            addUser(user_name)
+            loadUsers()
+
+        users_buttons_frame = ttk.Frame(users_frame_left)
+        users_buttons_frame.grid(column=0, row=1, sticky='nsew')
+        users_frame_left.rowconfigure(1, weight=1)
+
+        user_name_var = tk.StringVar()
+        users_add_entry = ttk.Entry(users_buttons_frame, textvariable=user_name_var)
+        users_add_button = ttk.Button(users_buttons_frame, text="Add User",
+                                      command=lambda: addNewUser(user_name_var.get()))
+
+        users_add_entry.grid(column=0, row=0)
+        users_add_button.grid(column=1, row=0)
+        users_buttons_frame.rowconfigure(0, weight=1)
+        users_buttons_frame.columnconfigure(0, weight=0)
+        users_buttons_frame.columnconfigure(0, weight=0)
+
+
+
+
+
         #--------------------------SET UP TRANSACTIONS TAB---------------------
 
         #Create individual tab frames and grid to container
@@ -23,9 +87,6 @@ class HomeFinanceToolkit:
                                   relief="ridge")
         options_frame.grid(column=0, row=0, sticky='nsew')
 
-        #Make tabs expandable/shrinkable to window size
-        container.columnconfigure(0, weight=1)
-        container.rowconfigure(0, weight=1)
 
         #Add frames as individual tabs to notebook
         container.add(transactions_frame, text="Transactions")
