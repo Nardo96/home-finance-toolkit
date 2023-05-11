@@ -50,6 +50,7 @@ class HomeFinanceToolkit:
             return users_listbox
 
         users_listbox = loadUsers()
+        users_listbox.bind('<Double-1>', lambda e: selectUser())
         users_frame_left.rowconfigure(0, weight=1)
         users_frame_left.columnconfigure(0, weight=1)
 
@@ -238,6 +239,21 @@ class HomeFinanceToolkit:
         #Set up header and add data filtered for selected columns
         def createTransactionTable(userid):
             data = getTransactions(int(userid))
+            named_data = []
+
+            account_list = getAccounts(userid)
+            account_names = {}
+            for account in account_list:
+                account_names[int(account[0])] = account[1]
+            transaction_types = {1:'Transfer', 2:'Employer Contribution', 3: 'Current Value'}
+            for row in account_list:
+                account_names[int(row[0])] = row[1]
+
+            for row in data:
+                new_row = (row[0], account_names[row[1]], transaction_types[int(row[2])],
+                           row[3], row[4])
+                named_data.append(new_row)
+
 
             transactions_table = ttk.Treeview(transactions_container)
             transactions_table['columns'] = ('TransactionID', 'Account', 'Transaction Type',
@@ -255,7 +271,7 @@ class HomeFinanceToolkit:
             transactions_table.heading('Date', text='Date', anchor=tk.CENTER)
             transactions_table.heading('Value', text='Value', anchor=tk.CENTER)
 
-            for i, row in enumerate(data):
+            for i, row in enumerate(named_data):
                 transactions_table.insert(parent='', index='end', iid=i, text='',
                                           values=row)
             transactions_table.grid(column=0, row=0, sticky='nsew')
