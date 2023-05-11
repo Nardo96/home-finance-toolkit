@@ -8,7 +8,7 @@ class HomeFinanceToolkit:
         parent.title("Home Finance Toolkit")
 
         #Set up Notebook container
-        container = ttk.Notebook(parent, height=450, width=800, padding="0 0 0 0")
+        container = ttk.Notebook(parent, height=450, width=1000, padding="0 0 0 0")
         container.grid(column=0, row=0, sticky='nsew')
         parent.columnconfigure(0, weight=1)
         parent.rowconfigure(0, weight=1)
@@ -101,6 +101,7 @@ class HomeFinanceToolkit:
             nonlocal users_listbox
             nonlocal accounts_table
             nonlocal transactions_table
+            nonlocal account_dropdown
 
             user_list = getUsers()
             user_ids = {}
@@ -113,7 +114,14 @@ class HomeFinanceToolkit:
             print(id)
             accounts_table = createAccountsTable()
             transactions_table = createTransactionTable(id)
+            accounts = getAccounts(id)
+            account_names = []
+            for account in accounts:
+                account_names.append(account[1])
+            account_dropdown_values = tuple(account_names)
+            account_dropdown['values'] = account_dropdown_values
             users_listbox.selection_clear(0, tk.END)
+
 
         user_select_button = ttk.Button(users_buttons_frame, text='Select User',
                                         command=selectUser)
@@ -192,6 +200,14 @@ class HomeFinanceToolkit:
             addAccount(account_name, selected_user_id.get(), checking, retirement)
             accounts_count += 1
             accounts_table = createAccountsTable()
+
+            accounts = getAccounts(selected_user_id.get())
+            account_names = []
+            for account in accounts:
+                account_names.append(account[1])
+            account_dropdown_values = tuple(account_names)
+            account_dropdown['values'] = account_dropdown_values
+
             account_name_entry.set('')
             account_checking_entry.set('')
             account_retirement_entry.set('')
@@ -237,7 +253,8 @@ class HomeFinanceToolkit:
 
         #Set up data table
         #Set up header and add data filtered for selected columns
-        def createTransactionTable(userid):
+
+        def getNamedData(userid):
             data = getTransactions(int(userid))
             named_data = []
 
@@ -245,7 +262,7 @@ class HomeFinanceToolkit:
             account_names = {}
             for account in account_list:
                 account_names[int(account[0])] = account[1]
-            transaction_types = {1:'Transfer', 2:'Employer Contribution', 3: 'Current Value'}
+            transaction_types = {1: 'Transfer', 2: 'Employer Contribution', 3: 'Current Value'}
             for row in account_list:
                 account_names[int(row[0])] = row[1]
 
@@ -253,7 +270,10 @@ class HomeFinanceToolkit:
                 new_row = (row[0], account_names[row[1]], transaction_types[int(row[2])],
                            row[3], row[4])
                 named_data.append(new_row)
+            return named_data
 
+        def createTransactionTable(userid):
+            data = getNamedData(userid)
 
             transactions_table = ttk.Treeview(transactions_container)
             transactions_table['columns'] = ('TransactionID', 'Account', 'Transaction Type',
@@ -271,7 +291,7 @@ class HomeFinanceToolkit:
             transactions_table.heading('Date', text='Date', anchor=tk.CENTER)
             transactions_table.heading('Value', text='Value', anchor=tk.CENTER)
 
-            for i, row in enumerate(named_data):
+            for i, row in enumerate(data):
                 transactions_table.insert(parent='', index='end', iid=i, text='',
                                           values=row)
             transactions_table.grid(column=0, row=0, sticky='nsew')
@@ -294,7 +314,7 @@ class HomeFinanceToolkit:
         transactions_input_container.columnconfigure(0, weight=1)
 
         #Set up left input entry headers
-        for i, header in enumerate(['Account ID', 'Transaction Type ID', 'Date', 'Value']):
+        for i, header in enumerate(['Account', 'Transaction Type', 'Date', 'Value']):
             l = ttk.Label(transactions_input_container_left, text=header, anchor=tk.CENTER,
                           relief='ridge')
             l.grid(row=0, column=i, sticky='ew')
@@ -309,26 +329,55 @@ class HomeFinanceToolkit:
         transaction_type_entry_var = tk.StringVar()
         date_entry_var = tk.StringVar()
         value_entry_var = tk.StringVar()
-        input_var_list = [account_entry_var, transaction_type_entry_var,
-                          date_entry_var, value_entry_var]
-        for i in range(4):
+
+        input_var_list = [date_entry_var, value_entry_var]
+
+        account_dropdown = ttk.Combobox(transactions_input_container_left,
+                                         textvariable=account_entry_var)
+        account_dropdown.grid(row=1, column=0, sticky='nsew')
+        accounts = getAccounts(int(selected_user_id.get()))
+        account_names = []
+        for account in accounts:
+            account_names.append(account[1])
+        account_dropdown_values = tuple(account_names)
+        account_dropdown['values'] = account_dropdown_values
+
+        transaction_type_dropdown = ttk.Combobox(
+            transactions_input_container_left,
+            textvariable = transaction_type_entry_var)
+        transaction_type_dropdown.grid(row=1, column=1, sticky='nsew')
+        transaction_type_dropdown_values = ('Transfer', 'Employer Contribution',
+                                            'Current Value')
+        transaction_type_dropdown['values'] = transaction_type_dropdown_values
+
+        for i in range(2):
             e = ttk.Entry(transactions_input_container_left,
                           textvariable=input_var_list[i])
-            e.grid(row=1, column=i, sticky='nsew')
+            e.grid(row=1, column=i+2, sticky='nsew')
         transactions_input_container_left.rowconfigure(1, weight=1)
 
         #Set up input buttons
         transactions_input_container_right = ttk.Frame(
             transactions_input_container, height=100, width=300)
-        transactions_input_container_right.grid(row=0, column=1, rowspan=2, sticky='nsew')
+        transactions_input_container_right.grid(row=0, column=1, rowspan=2,
+                                                sticky='nsew')
         all_data = getTransactions() + getDeletedTransactions()
         rowcount = len(all_data)
 
-        def addTransactionTable(account_id, transaction_type_id, date, value):
+        def addTransactionTable(account_name, transaction_type, date, value):
             #Add transaction to DB, update GUI table, and set inputs back to blank
             nonlocal rowcount
             nonlocal transactions_table
-            addTransaction(account_id, transaction_type_id, date, value)
+
+            accounts = getAccounts(int(selected_user_id.get()))
+            transaction_types = {'Transfer': 1, 'Employer Contribution': 2,
+                                 'Current Value': 3}
+            accounts_id = {}
+            for row in accounts:
+                accounts_id[row[1]] = int(row[0])
+
+            addTransaction(accounts_id[account_name],
+                           transaction_types[transaction_type], date, value)
             rowcount += 1
             transactions_table = createTransactionTable(selected_user_id.get())
             account_entry_var.set('')
@@ -341,19 +390,28 @@ class HomeFinanceToolkit:
             text='Add Transaction',
             command=lambda:
             addTransactionTable(
-                int(account_entry_var.get()),
-                int(transaction_type_entry_var.get()),
+                account_entry_var.get(),
+                transaction_type_entry_var.get(),
                 date_entry_var.get(),
                 float(value_entry_var.get())))
         add_transaction_button.grid(column=0, row=0, sticky='nsew')
 
-        def changeTransactionTable(account_id, transaction_type_id, date, value):
+        def changeTransactionTable(account_name, transaction_type, date, value):
             #Get ID of selected item, update DB values and table, and reset input to blank
+            nonlocal transactions_table
             selected_item = transactions_table.focus()
+            transactions_table = createTransactionTable(int(selected_user_id.get()))
             transaction_id = int(transactions_table.item(selected_item)['values'][0])
-            updateTransaction(transaction_id, account_id, transaction_type_id, date,
+
+            account_list = getAccounts(int(selected_user_id.get()))
+            account_id = {}
+            for account in account_list:
+                account_id[account[1]] = int(account[0])
+            transaction_types = {'Transfer':1, 'Employer Contribution':2, 'Current Value':3}
+
+            updateTransaction(transaction_id, account_id[account_name], transaction_types[transaction_type], date,
                               value)
-            values = [account_id, transaction_type_id, date, value]
+            values = [account_name, transaction_type, date, value]
             for i in range(4):
                 transactions_table.set(selected_item, column=i+1, value=values[i])
             for item in transactions_table.selection():
@@ -367,8 +425,8 @@ class HomeFinanceToolkit:
             transactions_input_container_right,
             text='Change Transaction Data',
             command=lambda: changeTransactionTable(
-                int(account_entry_var.get()),
-                int(transaction_type_entry_var.get()),
+                account_entry_var.get(),
+                transaction_type_entry_var.get(),
                 date_entry_var.get(),
                 float(value_entry_var.get())))
         change_transaction_button.grid(column=1, row=0, sticky='nsew')

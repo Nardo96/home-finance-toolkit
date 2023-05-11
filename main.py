@@ -51,7 +51,8 @@ def getTransactions(userid=None):
                               f'JOIN Accounts a ON t.AccountID = a.AccountID '
                               f'JOIN Users u ON a.UserID = u.UserID '
                               f'WHERE u.UserID = {int(userid)} '
-                              f'AND IFNULL(IsDeleted, 0)=0')
+                              f'AND IFNULL(IsDeleted, 0)=0 '
+                              f'ORDER BY TransactionID DESC')
         results_list = []
         for row in results:
             results_list.append(row)
