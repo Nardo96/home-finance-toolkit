@@ -123,7 +123,6 @@ class HomeFinanceToolkit:
             account_dropdown['values'] = account_dropdown_values
             users_listbox.selection_clear(0, tk.END)
 
-
         user_select_button = ttk.Button(users_buttons_frame, text='Select User',
                                         command=selectUser)
         user_select_button.grid(column=0, row=3)
@@ -440,6 +439,40 @@ class HomeFinanceToolkit:
                                                text='Delete Transaction',
                                                command=deleteTransactionTable)
         delete_transaction_button.grid(column=2, row=0, sticky='nsew')
+
+        #-------------------------SET UP BALANCES TAB--------------------------------
+        def getBalances(accounts):
+            # Take list of account names, return dictionary of account:balances
+            account_balances = {}
+            for account in accounts:
+                account_id = getAccountID(account)
+                result = cur.execute(f'SELECT Checking FROM Accounts '
+                                         f'WHERE AccountID = {account_id}')
+                investment = int(result.fetchone()[0])
+                #If investment account, get latest current value; else, sum transfers and employer contributions
+                if investment == 0:
+                    results = cur.execute(f'SELECT Value FROM Transactions WHERE AccountID = {account_id} '
+                                          f'AND TransactionTypeID = 3 '
+                                          f'ORDER BY TransactionID DESC')
+                    if results.fetchone() == None:
+                        result = cur.execute(f'SELECT SUM(Value) FROM Transactions WHERE AccountID = {account_id} '
+                                             f'AND TransactionTypeID IN (1, 2)')
+                        account_balances[account] = result.fetchone()[0]
+                    else:
+                        result = cur.execute(f'SELECT Value FROM Transactions WHERE AccountID = {account_id} '
+                                             f'AND TransactionTypeID = 3 '
+                                             f'ORDER BY TransactionID DESC')
+                        account_balances[account] = result.fetchone()[0]
+                else:
+                    result = cur.execute(f'SELECT SUM(Value) FROM Transactions WHERE AccountID = {account_id} '
+                                         f'AND TransactionTypeID IN (1, 2)')
+                    account_balances[account] = result.fetchone()[0]
+            return account_balances
+        def getCurrentValues(accounts):
+            #TODO: transfer investment account logic above into this function
+            pass
+        print(getBalances(['Wells Fargo Checking', 'Citbank Savings', 'Slavic 401k', 'WeBull']))
+
 
         #-------------------------SET UP CONFIGURATION OPTIONS TAB-------------------
         #Set up Options tab frame

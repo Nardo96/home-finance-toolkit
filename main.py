@@ -72,6 +72,7 @@ def getDeletedTransactions():
         results_list.append(row)
     return results_list
 
+
 def getUsers():
     results = cur.execute('SELECT * FROM Users')
     results_list = []
