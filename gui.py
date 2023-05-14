@@ -6,6 +6,7 @@ from tkinter import ttk
 class HomeFinanceToolkit:
     def __init__(self, parent):
         parent.title("Home Finance Toolkit")
+        transaction_types = {'Transfer': 1, 'Employer Contribution': 2, 'Current Value': 3}
 
         #Set up Notebook container
         container = ttk.Notebook(parent, height=450, width=1000, padding="0 0 0 0")
@@ -272,6 +273,14 @@ class HomeFinanceToolkit:
                 named_data.append(new_row)
             return named_data
 
+        def getAccountID(account_name):
+            accounts = getAccounts(int(selected_user_id.get()))
+            accounts_id = {}
+            for row in accounts:
+                accounts_id[row[1]] = int(row[0])
+            return accounts_id[account_name]
+
+
         def createTransactionTable(userid):
             data = getNamedData(userid)
 
@@ -369,14 +378,8 @@ class HomeFinanceToolkit:
             nonlocal rowcount
             nonlocal transactions_table
 
-            accounts = getAccounts(int(selected_user_id.get()))
-            transaction_types = {'Transfer': 1, 'Employer Contribution': 2,
-                                 'Current Value': 3}
-            accounts_id = {}
-            for row in accounts:
-                accounts_id[row[1]] = int(row[0])
-
-            addTransaction(accounts_id[account_name],
+            account_id = getAccountID(account_name)
+            addTransaction(account_id,
                            transaction_types[transaction_type], date, value)
             rowcount += 1
             transactions_table = createTransactionTable(selected_user_id.get())
@@ -403,13 +406,8 @@ class HomeFinanceToolkit:
             transactions_table = createTransactionTable(int(selected_user_id.get()))
             transaction_id = int(transactions_table.item(selected_item)['values'][0])
 
-            account_list = getAccounts(int(selected_user_id.get()))
-            account_id = {}
-            for account in account_list:
-                account_id[account[1]] = int(account[0])
-            transaction_types = {'Transfer':1, 'Employer Contribution':2, 'Current Value':3}
-
-            updateTransaction(transaction_id, account_id[account_name], transaction_types[transaction_type], date,
+            account_id = getAccountID(account_name)
+            updateTransaction(transaction_id, account_id, transaction_types[transaction_type], date,
                               value)
             values = [account_name, transaction_type, date, value]
             for i in range(4):
