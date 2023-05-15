@@ -9,7 +9,7 @@ class HomeFinanceToolkit:
         transaction_types = {'Transfer': 1, 'Employer Contribution': 2, 'Current Value': 3}
 
         #Set up Notebook container
-        container = ttk.Notebook(parent, height=450, width=1000, padding="0 0 0 0")
+        container = ttk.Notebook(parent, height=500, width=1000, padding="0 0 0 0")
         container.grid(column=0, row=0, sticky='nsew')
         parent.columnconfigure(0, weight=1)
         parent.rowconfigure(0, weight=1)
@@ -122,6 +122,7 @@ class HomeFinanceToolkit:
             account_dropdown_values = tuple(account_names)
             account_dropdown['values'] = account_dropdown_values
             users_listbox.selection_clear(0, tk.END)
+            createBalancesTable()
 
         user_select_button = ttk.Button(users_buttons_frame, text='Select User',
                                         command=selectUser)
@@ -386,6 +387,7 @@ class HomeFinanceToolkit:
             transaction_type_entry_var.set('')
             date_entry_var.set('')
             value_entry_var.set('')
+            createBalancesTable()
 
         add_transaction_button = ttk.Button(
             transactions_input_container_right,
@@ -441,16 +443,25 @@ class HomeFinanceToolkit:
         delete_transaction_button.grid(column=2, row=0, sticky='nsew')
 
         #-------------------------SET UP BALANCES TAB--------------------------------
-        def getBalances(accounts):
+        def getTransferBalances(accounts):
             # Take list of account names, return dictionary of account:balances
             account_balances = {}
             for account in accounts:
                 account_id = getAccountID(account)
+                result = cur.execute(f'SELECT SUM(Value) FROM Transactions WHERE AccountID = {account_id} '
+                                     f'AND TransactionTypeID IN (1, 2)')
+                account_balances[account] = result.fetchone()[0]
+            return account_balances
+        def getCurrentValues(accounts):
+            #take list of savings account names, return dictionary of account:current value
+            account_balances = {}
+            for account in accounts:
+                account_id = getAccountID(account)
                 result = cur.execute(f'SELECT Checking FROM Accounts '
-                                         f'WHERE AccountID = {account_id}')
-                investment = int(result.fetchone()[0])
-                #If investment account, get latest current value; else, sum transfers and employer contributions
-                if investment == 0:
+                                     f'WHERE AccountID = {account_id}')
+                checking = int(result.fetchone()[0])
+                # If savings account, get latest current value; else, sum transfers and employer contributions
+                if checking == 0:
                     results = cur.execute(f'SELECT Value FROM Transactions WHERE AccountID = {account_id} '
                                           f'AND TransactionTypeID = 3 '
                                           f'ORDER BY TransactionID DESC')
@@ -463,20 +474,123 @@ class HomeFinanceToolkit:
                                              f'AND TransactionTypeID = 3 '
                                              f'ORDER BY TransactionID DESC')
                         account_balances[account] = result.fetchone()[0]
-                else:
-                    result = cur.execute(f'SELECT SUM(Value) FROM Transactions WHERE AccountID = {account_id} '
-                                         f'AND TransactionTypeID IN (1, 2)')
-                    account_balances[account] = result.fetchone()[0]
             return account_balances
-        def getCurrentValues(accounts):
-            #TODO: transfer investment account logic above into this function
-            pass
-        print(getBalances(['Wells Fargo Checking', 'Citbank Savings', 'Slavic 401k', 'WeBull']))
+        print(getTransferBalances(['Wells Fargo Checking', 'Citbank Savings', 'Slavic 401k', 'WeBull']))
+        print(getCurrentValues(['Wells Fargo Checking', 'Citbank Savings', 'Slavic 401k', 'WeBull']))
+
+        #Create Balances tab
+        balances_frame = ttk.Frame(container, height=500, width=1000)
+        balances_frame.grid(column=0, row=0, sticky='nsew')
+        container.add(balances_frame, text='Balances')
+
+        balances_frame_left = ttk.Frame(balances_frame, height=500, width=300, borderwidth=4,
+                                        relief='ridge')
+        balances_frame_left.grid(column=0, row=0, sticky='')
+        balances_frame.columnconfigure(0, weight=1)
+        balances_frame.rowconfigure(0, weight=1)
+
+        balances_frame_right = ttk.Frame(balances_frame, height=500, width=700, borderwidth=4,
+                                         relief='ridge')
+        balances_frame_right.grid(column=1, row=0, sticky='nsew')
+        balances_frame.columnconfigure(1, weight=1)
+
+        #Set up account type list on left frame
+        account_types = ['All', 'Checking', 'Savings']
+        account_types_var = tk.StringVar(value=account_types)
+        account_type_list = tk.Listbox(balances_frame_left, listvariable=account_types_var)
+        account_type_list.grid(column=0, row=0, sticky='')
+        account_type_selected = tk.StringVar()
+        account_type_selected.set('All')
+        print(account_type_selected.get())
+
+        def selectAccountType():
+            selection_index = account_type_list.curselection()
+            selection = account_type_list.get(selection_index)
+            account_type_selected.set(selection)
+            print(account_type_selected.get())
+            createBalancesTable()
+
+        account_type_select = ttk.Button(balances_frame_left, text='Select Account Type',
+                                         command=selectAccountType)
+        account_type_select.grid(column=0, row=1, sticky='')
+        print(getAccounts(int(selected_user_id.get())))
+        account_type_list.bind('<Double-1>', lambda e: selectAccountType())
+
+        #Set up balances on the right frame
+        def createBalancesTable():
+            accounts_full_list = getAccounts(int(selected_user_id.get()))
+            account_names_list = []
+            balances = {}
+            current_values = {}
+            balances_table = ttk.Frame(balances_frame_right)
+            balances_table.grid(row=0, column=0, sticky='nsew')
+
+            if account_type_selected.get() == 'All':
+                l1 = ttk.Label(balances_table, text='Account Name')
+                l1.grid(row=0, column=0, sticky='ew')
+                l2 = ttk.Label(balances_table, text='Current Balance')
+                l2.grid(row=0, column=1, sticky='ew')
+                for i, account in enumerate(accounts_full_list):
+                    account_names_list.append(account[1])
+                    if account[3] == 1:
+                        balances = balances | getTransferBalances(account_names_list[i:i+1])
+                    elif account[3] == 0:
+                        balances = balances | getCurrentValues(account_names_list[i:i+1])
+                print(balances)
+
+                for i, account in enumerate(balances):
+                    l1 = ttk.Label(balances_table, text=account)
+                    l1.grid(row=i+1, column=0, sticky='ew')
+                    l2 = ttk.Label(balances_table, text=balances[account])
+                    l2.grid(row=i+1, column=1, sticky='ew')
+            elif account_type_selected.get() == 'Checking':
+                l1 = ttk.Label(balances_table, text='Account Name')
+                l1.grid(row=0, column=0, sticky='ew')
+                l2 = ttk.Label(balances_table, text='Transfer Balance')
+                l2.grid(row=0, column=1, sticky='ew')
+                for i, account in enumerate(accounts_full_list):
+                    account_names_list.append(account[1])
+                    if account[3] == 1:
+                        balances = balances | getTransferBalances(account_names_list[i:i+1])
+                print(balances)
+                for i, account in enumerate(balances):
+                    l1 = ttk.Label(balances_table, text=account)
+                    l1.grid(row=i+1, column=0, sticky='ew')
+                    l2 = ttk.Label(balances_table, text=balances[account])
+                    l2.grid(row=i+1, column=1, sticky='ew')
+            elif account_type_selected.get() == 'Savings':
+                l1 = ttk.Label(balances_table, text='Account Name')
+                l1.grid(row=0, column=0, sticky='ew')
+                l2 = ttk.Label(balances_table, text='Transfer Balance')
+                l2.grid(row=0, column=1, sticky='ew')
+                l3 = ttk.Label(balances_table, text='Current Value')
+                l3.grid(row=0, column=2, sticky='ew')
+                for i, account in enumerate(accounts_full_list):
+                    account_names_list.append(account[1])
+                    if account[3] == 0:
+                        balances = balances | getTransferBalances(account_names_list[i:i+1])
+                        current_values = current_values | getCurrentValues((account_names_list[i:i+1]))
+                print(balances)
+                for i, account in enumerate(balances):
+                    l1 = ttk.Label(balances_table, text=account)
+                    l1.grid(row=i+1, column=0, sticky='ew')
+                    l2 = ttk.Label(balances_table, text=balances[account])
+                    l2.grid(row=i+1, column=1, sticky='ew')
+                    l3 = ttk.Label(balances_table, text=current_values[account])
+                    l3.grid(row=i+1, column=2, sticky='ew')
+
+        createBalancesTable()
+        account_type_selected.set('Checking')
+        createBalancesTable()
+        account_type_selected.set('Savings')
+        createBalancesTable()
+
+
 
 
         #-------------------------SET UP CONFIGURATION OPTIONS TAB-------------------
         #Set up Options tab frame
-        options_frame = ttk.Frame(container, height=500, width=800, borderwidth=4,
+        options_frame = ttk.Frame(container, height=500, width=1000, borderwidth=4,
                                   relief="ridge")
         options_frame.grid(column=0, row=0, sticky='nsew')
         container.add(options_frame, text="Options")
