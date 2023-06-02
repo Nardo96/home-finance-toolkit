@@ -449,7 +449,8 @@ class HomeFinanceToolkit:
             for account in accounts:
                 account_id = getAccountID(account)
                 result = cur.execute(f'SELECT SUM(Value) FROM Transactions WHERE AccountID = {account_id} '
-                                     f'AND TransactionTypeID IN (1, 2)')
+                                     f'AND TransactionTypeID IN (1, 2) '
+                                     f'AND IFNULL(IsDeleted, 0)=0')
                 account_balances[account] = result.fetchone()[0]
             return account_balances
         def getCurrentValues(accounts):
@@ -493,6 +494,11 @@ class HomeFinanceToolkit:
                                          relief='ridge')
         balances_frame_right.grid(column=1, row=0, sticky='nsew')
         balances_frame.columnconfigure(1, weight=1)
+
+        # balances_frame_right_bottom = ttk.Frame(balances_frame, height=300, width=700, borderwidth=4,
+        #                                         relief='ridge')
+        # balances_frame_right_bottom.grid(column=1, row=1, sticky='nsew')
+        # balances_frame.rowconfigure(1, weight=1)
 
         #Set up account type list on left frame
         account_types = ['All', 'Checking', 'Savings']
@@ -539,9 +545,9 @@ class HomeFinanceToolkit:
                 print(balances)
 
                 for i, account in enumerate(balances):
-                    l1 = ttk.Label(balances_table, text=account)
+                    l1 = ttk.Label(balances_table, text=f'{account}')
                     l1.grid(row=i+1, column=0, sticky='ew')
-                    l2 = ttk.Label(balances_table, text=balances[account])
+                    l2 = ttk.Label(balances_table, text=f'{balances[account]:2f}')
                     l2.grid(row=i+1, column=1, sticky='ew')
             elif account_type_selected.get() == 'Checking':
                 l1 = ttk.Label(balances_table, text='Account Name')
@@ -556,7 +562,7 @@ class HomeFinanceToolkit:
                 for i, account in enumerate(balances):
                     l1 = ttk.Label(balances_table, text=account)
                     l1.grid(row=i+1, column=0, sticky='ew')
-                    l2 = ttk.Label(balances_table, text=balances[account])
+                    l2 = ttk.Label(balances_table, text=f'{balances[account]:.2f}')
                     l2.grid(row=i+1, column=1, sticky='ew')
             elif account_type_selected.get() == 'Savings':
                 l1 = ttk.Label(balances_table, text='Account Name')
@@ -565,6 +571,8 @@ class HomeFinanceToolkit:
                 l2.grid(row=0, column=1, sticky='ew')
                 l3 = ttk.Label(balances_table, text='Current Value')
                 l3.grid(row=0, column=2, sticky='ew')
+                l4 = ttk.Label(balances_table, text='Percent Value')
+                l4.grid(row=0, column=3, sticky='ew')
                 for i, account in enumerate(accounts_full_list):
                     account_names_list.append(account[1])
                     if account[3] == 0:
@@ -574,10 +582,50 @@ class HomeFinanceToolkit:
                 for i, account in enumerate(balances):
                     l1 = ttk.Label(balances_table, text=account)
                     l1.grid(row=i+1, column=0, sticky='ew')
-                    l2 = ttk.Label(balances_table, text=balances[account])
+                    l2 = ttk.Label(balances_table, text=f'{balances[account]:.2f}')
                     l2.grid(row=i+1, column=1, sticky='ew')
-                    l3 = ttk.Label(balances_table, text=current_values[account])
+                    l3 = ttk.Label(balances_table, text=f'{current_values[account]:.2f}')
                     l3.grid(row=i+1, column=2, sticky='ew')
+                    l4 = ttk.Label(balances_table, text=f'{current_values[account]/balances[account]*100:.2f}%')
+                    l4.grid(row=i+1, column=3, sticky='ew')
+                i = len(balances)
+                net_income = 0
+                total_invested_savings = 0
+                for account in accounts_full_list:
+                    if (account[3] == 1 or account[4] == 1): #If checking or 401k account
+                        net_income += sum(getDeposits(account[0]))
+                for account in balances:
+                    total_invested_savings += balances[account]
+
+                placeholder = ttk.Label(balances_table, text='')
+                placeholder.grid(row=i+1, column=0, sticky='ew')
+
+                l1 = ttk.Label(balances_table, text='Net Income (Deposits + 401k Contribution + Employer Match)')
+                l1.grid(row=i+2, column=0, sticky='ew')
+
+                l2 = ttk.Label(balances_table, text=f'{net_income:.2f}')
+                l2.grid(row=i+2, column=1, sticky='ew')
+
+                l3 = ttk.Label(balances_table, text='Net Income Minimum Savings Target (20%)')
+                l3.grid(row=i+3, column=0, sticky='ew')
+
+                l4 = ttk.Label(balances_table, text=f'{net_income*.2:.2f}')
+                l4.grid(row=i+3, column=1, sticky='ew')
+
+                l5 = ttk.Label(balances_table, text='Total Savings Contributions (401k + Personal Investment)')
+                l5.grid(row=i+4, column=0, sticky='ew')
+
+                l6 = ttk.Label(balances_table, text= f'{total_invested_savings:.2f}')
+                l6.grid(row=i+4, column=1, sticky='ew')
+
+                placeholder2 = ttk.Label(balances_table, text='')
+                placeholder2.grid(row=i+5, column=0, sticky='ew')
+
+                l7 = ttk.Label(balances_table, text='Net Income Savings Rate')
+                l7.grid(row=i+6, column=0, sticky='ew')
+
+                l8 = ttk.Label(balances_table, text=f'{total_invested_savings/net_income*100:.2f}')
+                l8.grid(row=i+6, column=1, sticky='ew')
 
         createBalancesTable()
         account_type_selected.set('Checking')

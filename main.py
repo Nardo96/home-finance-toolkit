@@ -115,6 +115,19 @@ def deleteAccount(accountID):
     cur.execute("DELETE FROM Accounts WHERE AccountID = ?", values)
     con.commit()
 
+def getDeposits(accountID):
+    results = cur.execute(f'SELECT Value FROM Transactions '
+                          f'WHERE AccountID = {accountID} AND '
+                          f'Value > 0 AND TransactionTypeID != 3 '
+                          f'AND IFNULL(IsDeleted, 0)=0')
+    con.commit()
+    results_list = []
+    for result in results:
+        results_list.append(float(result[0]))
+    return results_list
+
+
+
 
 
 if __name__ == '__main__':
@@ -241,3 +254,7 @@ if __name__ == '__main__':
 # print(getAccounts(2))
 # deleteUser(2)
 # print(getUsers())
+
+deposits = getDeposits(1)
+deposits2 = getDeposits(3)
+print(sum(deposits + deposits2))
