@@ -1,6 +1,11 @@
 from main import *
 import tkinter as tk
 from tkinter import ttk
+from datetime import datetime
+import matplotlib
+matplotlib.use("TkAgg")
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 
 class HomeFinanceToolkit:
@@ -522,6 +527,64 @@ class HomeFinanceToolkit:
         print(getAccounts(int(selected_user_id.get())))
         account_type_list.bind('<Double-1>', lambda e: selectAccountType())
 
+        def getSavingsPerYear():
+            data = getTransactions(int(selected_user_id.get()))
+            accounts = getAccounts(int(selected_user_id.get()))
+            savings_account_ids = []
+            for account in accounts:
+                if int(account[3]) == 0:
+                    savings_account_ids.append(account[0])
+            data_savings = []
+            for row in data:
+                if (row[1] in savings_account_ids):
+                    data_savings.append(row)
+            data_list = [list(tuple) for tuple in data_savings]
+            dates = []
+            for row in data_list:
+                row[3] = datetime.strptime(row[3], '%Y-%m-%d')
+                dates.append(row[3])
+            max_date = max(dates)
+            year1sum = 0
+            year2sum = 0
+            year3sum = 0
+            print(max_date)
+            for row in data_list:
+                if (row[2] == 1 or row[2] == 2):
+                    if ((max_date - row[3]).days < 366):
+                        year1sum += row[4]
+                    elif ((max_date - row[3]).days < 731):
+                        year2sum += row[4]
+                    elif ((max_date - row[3]).days < 1096):
+                        year3sum += row[4]
+            savingsPerYear = [[max_date.year, year1sum], [max_date.year-1, year2sum], [max_date.year-2, year3sum]]
+            return savingsPerYear
+
+        def getLastYearDeposits():
+            data = getTransactions(int(selected_user_id.get()))
+            accounts = getAccounts(int(selected_user_id.get()))
+            checking_account_ids = []
+            for account in accounts:
+                if int(account[3]) == 1:
+                    checking_account_ids.append(account[0])
+            data_checkings = []
+            for row in data:
+                if (row[1] in checking_account_ids):
+                    data_checkings.append(row)
+            data_list = [list(tuple) for tuple in data_checkings]
+            dates = []
+            for row in data_list:
+                row[3] = datetime.strptime(row[3], '%Y-%m-%d')
+                dates.append(row[3])
+            max_date = max(dates)
+            year1sum = 0
+            print(max_date)
+            for row in data_list:
+                if (row[2] == 1 or row[2] == 2):
+                    if ((max_date - row[3]).days < 366):
+                        if row[4] > 0:
+                            year1sum += row[4]
+            return year1sum
+
         #Set up balances on the right frame
         def createBalancesTable():
             accounts_full_list = getAccounts(int(selected_user_id.get()))
@@ -596,6 +659,7 @@ class HomeFinanceToolkit:
                         net_income += sum(getDeposits(account[0]))
                 for account in balances:
                     total_invested_savings += balances[account]
+                print(f'Total Deposits in WellsFargo checking: {sum(getDeposits(1))}')
 
                 placeholder = ttk.Label(balances_table, text='')
                 placeholder.grid(row=i+1, column=0, sticky='ew')
@@ -627,21 +691,44 @@ class HomeFinanceToolkit:
                 l8 = ttk.Label(balances_table, text=f'{total_invested_savings/net_income*100:.2f}')
                 l8.grid(row=i+6, column=1, sticky='ew')
 
-        createBalancesTable()
-        account_type_selected.set('Checking')
-        createBalancesTable()
+                placeholder3 = ttk.Label(balances_table, text='')
+                placeholder3.grid(row=i+7, column=0, sticky='ew')
+
+                savingsPerYear = getSavingsPerYear()
+                year = []
+                savings = []
+                for i, record in enumerate(savingsPerYear):
+                    year.append(savingsPerYear[2-i][0])
+                    if (i == 0):
+                        savings.append(savingsPerYear[2-i][1])
+                    else:
+                        savings.append(savingsPerYear[2-i][1] + savings[i-1])
+                print(savingsPerYear)
+                print(year)
+                print(savings)
+                deposits = getLastYearDeposits()
+                projected_savings = deposits*(total_invested_savings/net_income)
+                print(deposits)
+                print(projected_savings)
+
+                savings_plot = Figure(figsize=(7,3), dpi=70)
+                savings_subplot = savings_plot.add_subplot(111)
+                savings_subplot.bar(year, savings)
+
+                year.append(year[2] + 1)
+                year.append(year[2] + 2)
+                savings.append(savings[2] + projected_savings)
+                savings.append(savings[3] + projected_savings)
+
+                savings_subplot.bar(year[3], savings[3], color='#1f77b4', hatch='/')
+                savings_subplot.bar(year[4], savings[4], color='#1f77b4', hatch='/')
+                savings_subplot.set_title("Savings Projection")
+
+                canvas = FigureCanvasTkAgg(savings_plot, balances_table)
+                canvas.get_tk_widget().grid(row=i+9, column=0, sticky = 'ew')
+
         account_type_selected.set('Savings')
         createBalancesTable()
-
-
-
-
-        #-------------------------SET UP CONFIGURATION OPTIONS TAB-------------------
-        #Set up Options tab frame
-        options_frame = ttk.Frame(container, height=500, width=1000, borderwidth=4,
-                                  relief="ridge")
-        options_frame.grid(column=0, row=0, sticky='nsew')
-        container.add(options_frame, text="Options")
 
         for child in transactions_frame.winfo_children():
             x = child.winfo_x()
